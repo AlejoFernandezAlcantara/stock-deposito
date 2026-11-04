@@ -12,9 +12,8 @@ function StockBar({ available, total }) {
     <div className="w-full space-y-1">
       <div className="h-2 w-full overflow-hidden rounded-full bg-line/80">
         <div
-          className={`h-full transition-all duration-300 ${
-            isEmpty ? 'bg-danger' : isLow ? 'bg-amber' : 'bg-forest'
-          }`}
+          className={`h-full transition-all duration-300 ${isEmpty ? 'bg-danger' : isLow ? 'bg-amber' : 'bg-forest'
+            }`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -203,7 +202,7 @@ export default function InventoryView({ items, loading, onReload, onWithdraw, no
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-                          item.category.toLowerCase().includes(search.toLowerCase());
+        item.category.toLowerCase().includes(search.toLowerCase());
       const matchCat = selectedCat === 'ALL' || item.category === selectedCat;
       return matchSearch && matchCat;
     });
@@ -231,7 +230,7 @@ export default function InventoryView({ items, loading, onReload, onWithdraw, no
 
   return (
     <div className="space-y-4">
-      
+
       {/* Barra de Filtros y Búsqueda */}
       <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
         <div className="relative flex-1">
@@ -256,20 +255,23 @@ export default function InventoryView({ items, loading, onReload, onWithdraw, no
         </div>
 
         {categories.length > 2 && (
-          <div className="flex overflow-x-auto pb-1 sm:pb-0 gap-1.5 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCat(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  selectedCat === cat
-                    ? 'bg-forest text-white shadow-xs'
-                    : 'bg-card border border-line text-muted hover:text-ink hover:bg-paper'
-                }`}
-              >
-                {cat === 'ALL' ? 'Todas' : cat}
-              </button>
-            ))}
+          <div className="w-full sm:w-auto min-w-[200px]">
+            <select
+              id="filter-category"
+              value={selectedCat}
+              onChange={(e) => setSelectedCat(e.target.value)}
+              className="field py-2 text-xs font-semibold cursor-pointer"
+            >
+              <option value="ALL">Todas las categorías ({items.length})</option>
+              {categories.filter(c => c !== 'ALL').map((cat) => {
+                const count = items.filter(i => i.category === cat).length;
+                return (
+                  <option key={cat} value={cat}>
+                    {cat} ({count})
+                  </option>
+                );
+              })}
+            </select>
           </div>
         )}
       </div>
