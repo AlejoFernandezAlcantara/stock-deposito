@@ -1,47 +1,56 @@
 @import "tailwindcss";
 
-/* Paleta: papel verdoso, tinta oscura, verde bosque (stock en depósito) y ámbar (fuera del depósito). */
 @theme {
   --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-paper: #edf0ea;
-  --color-card: #fbfcfa;
-  --color-ink: #17231d;
-  --color-muted: #5d6b62;
-  --color-line: #cbd3c8;
-  --color-forest: #1f5f4a;
-  --color-forest-dark: #164536;
-  --color-amber: #a8590b;
-  --color-amber-soft: #f4e4cc;
-  --color-danger: #a32a2a;
+  --color-paper: #f4f6f3;
+  --color-card: #ffffff;
+  --color-ink: #111a15;
+  --color-muted: #5d6e64;
+  --color-line: #e2e8e0;
+  --color-forest: #1b5e43;
+  --color-forest-dark: #144733;
+  --color-forest-light: #e8f5ef;
+  --color-amber: #b45309;
+  --color-amber-soft: #fef3c7;
+  --color-danger: #dc2626;
+  --color-danger-soft: #fee2e2;
 }
 
-body { @apply bg-paper text-ink font-sans antialiased; font-variant-numeric: tabular-nums; }
+body {
+  @apply bg-paper text-ink font-sans antialiased min-h-screen selection:bg-forest/15 selection:text-forest;
+  font-variant-numeric: tabular-nums;
+}
 
-/* Foco visible para navegación con teclado */
-:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 2px; }
+:focus-visible {
+  outline: 2px solid var(--color-forest);
+  outline-offset: 2px;
+}
 
-/* Componentes reutilizables (Tailwind v4: @utility permite encadenarlos con @apply) */
+/* Utilidades de componentes */
 @utility btn {
-  @apply inline-flex items-center justify-center rounded-md px-3.5 py-2 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
 }
+
 @utility btn-primary {
-  @apply btn bg-forest text-white hover:bg-forest-dark;
+  @apply btn bg-forest text-white shadow-sm hover:bg-forest-dark hover:shadow;
 }
+
 @utility btn-ghost {
-  @apply btn border border-line bg-card text-ink hover:bg-paper;
+  @apply btn border border-line bg-white text-ink shadow-xs hover:bg-paper hover:border-gray-300;
 }
+
 @utility btn-danger {
-  @apply btn border border-danger bg-white text-danger hover:bg-danger hover:text-white;
+  @apply btn border border-danger/20 bg-white text-danger hover:bg-danger hover:text-white hover:border-danger;
 }
+
 @utility field {
-  @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm;
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink transition-colors focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/15 shadow-xs;
 }
+
 @utility label {
-  @apply mb-1 block text-sm font-medium;
+  @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted;
 }
-@utility th {
-  @apply px-4 py-2.5 text-left text-sm font-semibold text-muted;
-}
-@utility td {
-  @apply px-4 py-3 text-sm;
+
+@utility card {
+  @apply rounded-xl border border-line bg-card shadow-xs;
 }
