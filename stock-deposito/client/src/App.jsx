@@ -7,7 +7,7 @@ import WithdrawalsView from './components/WithdrawalsView.jsx';
 import WithdrawalForm from './components/WithdrawalForm.jsx';
 import ItemForm from './components/ItemForm.jsx';
 import { IconBox, IconPlus, IconArrowRight, IconTrash, IconLogOut, IconUser, IconDownload } from './components/Icons.jsx';
-import { exportInventoryToCsv } from './exportUtils.js';
+import { exportInventoryToExcel, exportInventoryToPdf } from './exportUtils.js';
 
 export default function App() {
   const { role, isAdmin, logout } = useAuth();
@@ -20,13 +20,18 @@ export default function App() {
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const handleExport = async () => {
+  const handleExport = async (format = 'excel') => {
     setExporting(true);
     try {
       // Obtenemos los préstamos/retiros con estado pendiente (RETIRADO)
       const pendingWithdrawals = await api.getWithdrawals({ status: 'RETIRADO' });
-      exportInventoryToCsv({ items, pendingWithdrawals });
-      notify('Reporte descargado con éxito.');
+      if (format === 'pdf') {
+        exportInventoryToPdf({ items, pendingWithdrawals });
+        notify('Generando vista de impresión / PDF...');
+      } else {
+        exportInventoryToExcel({ items, pendingWithdrawals });
+        notify('Libro Excel (.xlsx) descargado con éxito.');
+      }
     } catch (err) {
       notify('Error al generar la exportación: ' + err.message, 'error');
     } finally {
@@ -108,15 +113,26 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-ink hover:bg-paper hover:border-forest/40 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-              title="Exportar stock actual y préstamos pendientes a Excel / CSV"
-            >
-              <IconDownload className="h-4 w-4 text-forest" />
-              <span>{exporting ? 'Exportando...' : 'Exportar datos'}</span>
-            </button>
+            <div className="flex items-center rounded-lg border border-line bg-white p-0.5 shadow-xs">
+              <button
+                onClick={() => handleExport('excel')}
+                disabled={exporting}
+                className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold text-ink hover:bg-paper hover:text-forest transition-colors cursor-pointer disabled:opacity-50"
+                title="Descargar reporte en formato Excel (.xlsx) con fórmulas automáticas"
+              >
+                <IconDownload className="h-3.5 w-3.5 text-forest" />
+                <span>Excel</span>
+              </button>
+              <span className="h-3.5 w-px bg-line" />
+              <button
+                onClick={() => handleExport('pdf')}
+                disabled={exporting}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-muted hover:text-danger hover:bg-paper transition-colors cursor-pointer disabled:opacity-50"
+                title="Generar reporte en formato PDF / Imprimir"
+              >
+                <span>PDF</span>
+              </button>
+            </div>
 
             <button
               onClick={logout}
