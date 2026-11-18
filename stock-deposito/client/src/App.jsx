@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useAuth } from './components/AuthContext.jsx';
 import LoginScreen from './components/LoginScreen.jsx';
@@ -6,7 +6,8 @@ import InventoryView from './components/InventoryView.jsx';
 import WithdrawalsView from './components/WithdrawalsView.jsx';
 import WithdrawalForm from './components/WithdrawalForm.jsx';
 import ItemForm from './components/ItemForm.jsx';
-import { IconBox, IconPlus, IconArrowRight, IconTrash, IconLogOut, IconUser } from './components/Icons.jsx';
+import { IconBox, IconPlus, IconArrowRight, IconTrash, IconLogOut, IconUser, IconDownload } from './components/Icons.jsx';
+import { exportInventoryToCsv } from './exportUtils.js';
 
 export default function App() {
   const { role, isAdmin, logout } = useAuth();
@@ -16,7 +17,22 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [withdrawalsKey, setWithdrawalsKey] = useState(0);
   const [modal, setModal] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      // Obtenemos los préstamos/retiros con estado pendiente (RETIRADO)
+      const pendingWithdrawals = await api.getWithdrawals({ status: 'RETIRADO' });
+      exportInventoryToCsv({ items, pendingWithdrawals });
+      notify('Reporte descargado con éxito.');
+    } catch (err) {
+      notify('Error al generar la exportación: ' + err.message, 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const notify = useCallback((message, kind = 'ok') => {
     setToast({ message, kind });
@@ -68,11 +84,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-paper pb-16">
-      
+
       {/* Barra de Navegación Superior */}
       <header className="sticky top-0 z-40 border-b border-line bg-card/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          
+
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-forest text-white shadow-xs">
               <IconBox className="h-5 w-5" />
@@ -83,9 +99,8 @@ export default function App() {
               </h1>
               <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted">
                 <span
-                  className={`inline-block h-2 w-2 rounded-full ${
-                    isAdmin ? 'bg-forest' : 'bg-amber'
-                  }`}
+                  className={`inline-block h-2 w-2 rounded-full ${isAdmin ? 'bg-forest' : 'bg-amber'
+                    }`}
                 />
                 <span>{isAdmin ? 'Administrador' : 'Modo Lector'}</span>
               </div>
@@ -93,6 +108,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-ink hover:bg-paper hover:border-forest/40 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+              title="Exportar stock actual y préstamos pendientes a Excel / CSV"
+            >
+              <IconDownload className="h-4 w-4 text-forest" />
+              <span>{exporting ? 'Exportando...' : 'Exportar datos'}</span>
+            </button>
+
             <button
               onClick={logout}
               className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-muted hover:text-ink hover:bg-paper transition-colors cursor-pointer"
@@ -167,21 +192,19 @@ export default function App() {
           <nav className="flex gap-4 sm:gap-6 -mb-px">
             <button
               onClick={() => setTab('inventory')}
-              className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                tab === 'inventory'
-                  ? 'border-forest text-forest'
-                  : 'border-transparent text-muted hover:text-ink'
-              }`}
+              className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${tab === 'inventory'
+                ? 'border-forest text-forest'
+                : 'border-transparent text-muted hover:text-ink'
+                }`}
             >
               Inventario de Stock
             </button>
             <button
               onClick={() => setTab('withdrawals')}
-              className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                tab === 'withdrawals'
-                  ? 'border-forest text-forest'
-                  : 'border-transparent text-muted hover:text-ink'
-              }`}
+              className={`pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${tab === 'withdrawals'
+                ? 'border-forest text-forest'
+                : 'border-transparent text-muted hover:text-ink'
+                }`}
             >
               Retiros y Devoluciones
             </button>
@@ -227,9 +250,8 @@ export default function App() {
       {toast && (
         <div
           role="status"
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-xl animate-in slide-in-from-bottom-3 duration-200 ${
-            toast.kind === 'error' ? 'bg-danger' : 'bg-forest'
-          }`}
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-xl animate-in slide-in-from-bottom-3 duration-200 ${toast.kind === 'error' ? 'bg-danger' : 'bg-forest'
+            }`}
         >
           <span>{toast.message}</span>
         </div>
